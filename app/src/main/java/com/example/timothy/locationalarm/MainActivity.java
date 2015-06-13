@@ -18,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements
     int thresholdDistance;
     TextView distance;
     boolean alarmRan = false;
+    private Button setDest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +81,17 @@ public class MainActivity extends AppCompatActivity implements
         thresholdDistance = 1000; //in meters
 
         distance = (TextView)findViewById(R.id.test);
+
+        setDest = (Button)findViewById(R.id.setDestBtn);
+        setDest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view.getId() == setDest.getId()){
+                    Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
+                    startActivity(mapIntent);
+                }
+            }
+        });
     }
 
     @Override
