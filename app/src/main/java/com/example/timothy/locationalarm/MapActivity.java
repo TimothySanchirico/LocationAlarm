@@ -31,5 +31,6 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
                 .snippet("The most populous city in Australia.")
                 .position(sydney));
     }
+
 }
 

@@ -30,6 +30,12 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 
 import java.text.DateFormat;
@@ -42,7 +48,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements
         com.google.android.gms.location.LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
 
     private static final String TAG = "MainActivity"; // Tag for Logs
     private static long INTERVAL = 5000; // Longest time in between updates (5 seconds)
@@ -57,12 +63,19 @@ public class MainActivity extends AppCompatActivity implements
     TextView distance;
     boolean alarmRan = false;
     private Button setDest;
+    boolean firstLocationUpdate = true;
+    GoogleMap myMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.map_activity);
+
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         checkGPSEnabled();
         if (!isGooglePlayServicesAvailable()) {
             finish();
@@ -74,24 +87,51 @@ public class MainActivity extends AppCompatActivity implements
                 .build();
         createLocationRequest();
 
-        mDestination = new Location("");
-        mDestination.setLongitude(-88.227253);
-        mDestination.setLatitude(40.110080);
+        mDestination = null;
 
         thresholdDistance = 1000; //in meters
 
-        distance = (TextView)findViewById(R.id.test);
+        distance = (TextView)findViewById(R.id.mapText);
 
-        setDest = (Button)findViewById(R.id.setDestBtn);
-        setDest.setOnClickListener(new View.OnClickListener() {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        LatLng sydney = new LatLng(-33.867, 151.206);
+
+        map.setMyLocationEnabled(true);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
+
+        map.addMarker(new MarkerOptions()
+                .title("Sydney")
+                .snippet("The most populous city in Australia.")
+                .position(sydney));
+        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
-            public void onClick(View view) {
-                if(view.getId() == setDest.getId()){
-                    Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
-                    startActivity(mapIntent);
-                }
+            public void onMapClick(final LatLng latLng) {
+
+                new android.app.AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Set Destination")
+                        .setMessage("Set this location as destination?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mDestination = new Location("");
+                                mDestination.setLatitude(latLng.latitude);
+                                mDestination.setLongitude(latLng.longitude);
+
+
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .show();
             }
         });
+        myMap = map;
     }
 
     @Override
@@ -163,6 +203,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
+        if(firstLocationUpdate) {
+            LatLng cameraHere = new LatLng(location.getLatitude(), location.getLongitude());
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraHere, 13));
+            firstLocationUpdate = false;
+        }
         mCurrentLocation = location;
         String lat = String.valueOf(mCurrentLocation.getLatitude());
         String lng = String.valueOf(mCurrentLocation.getLongitude());
@@ -230,13 +275,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public boolean checkDistance() {
-
-        if( mCurrentLocation.distanceTo(mDestination) < thresholdDistance) {
-            return true;
+        if(mDestination != null) {
+            if( mCurrentLocation.distanceTo(mDestination) < thresholdDistance) {
+                return true;
+            }
         }
-        else {
-            return false;
-        }
+        return false;
 
     }
 
@@ -255,7 +299,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void setDistanceText(){
-        distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m");
+        if(mDestination == null){
+            distance.setText("Please select a destination");
+        }
+        else {
+            distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m");
+        }
+
     }
 }
 
