@@ -9,10 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -44,7 +46,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-
 public class MainActivity extends AppCompatActivity implements
         com.google.android.gms.location.LocationListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -66,11 +67,12 @@ public class MainActivity extends AppCompatActivity implements
     boolean firstLocationUpdate = true;
     GoogleMap myMap;
     private final int SETTINGS_RESULT = 25;
+    SharedPreferences sharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.map_activity);
 
         MapFragment mapFragment = (MapFragment) getFragmentManager()
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements
 
         thresholdDistance = 1000; //in meters
 
-        distance = (TextView)findViewById(R.id.mapText);
+        distance = (TextView) findViewById(R.id.mapText);
 
 
     }
@@ -136,6 +138,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SETTINGS_RESULT) {
+            thresholdDistance = Integer.parseInt(sharedPrefs.getString("distancePreference", "1000"));
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -144,13 +155,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-            if(item.getItemId() == R.id.action_settings) {
-                Intent i = new Intent(getApplicationContext(), UserSettings.class);
-                startActivityForResult(i, SETTINGS_RESULT);
-            }
+        if (item.getItemId() == R.id.action_settings) {
+            Intent i = new Intent(getApplicationContext(), UserSettings.class);
+            startActivityForResult(i, SETTINGS_RESULT);
+        }
         return super.onOptionsItemSelected(item);
     }
-
 
 
     protected void createLocationRequest() {
@@ -184,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-
     @Override
     public void onConnected(Bundle bundle) {
 
@@ -207,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        if(firstLocationUpdate) {
+        if (firstLocationUpdate) {
             LatLng cameraHere = new LatLng(location.getLatitude(), location.getLongitude());
             myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraHere, 13));
             firstLocationUpdate = false;
@@ -217,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements
         String lng = String.valueOf(mCurrentLocation.getLongitude());
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
 
-        if(checkDistance() && !alarmRan) {
+        if (checkDistance() && !alarmRan) {
             alarmRan = true;
             runAlarm();
 
@@ -279,8 +288,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public boolean checkDistance() {
-        if(mDestination != null) {
-            if( mCurrentLocation.distanceTo(mDestination) < thresholdDistance) {
+        if (mDestination != null) {
+            if (mCurrentLocation.distanceTo(mDestination) < thresholdDistance) {
                 return true;
             }
         }
@@ -288,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void runAlarm(){
+    public void runAlarm() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.SECOND, 5);
 
@@ -297,16 +306,15 @@ public class MainActivity extends AppCompatActivity implements
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 12345, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager am =
-                (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
+                (AlarmManager) getSystemService(Activity.ALARM_SERVICE);
         am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
                 pendingIntent);
     }
 
-    public void setDistanceText(){
-        if(mDestination == null){
+    public void setDistanceText() {
+        if (mDestination == null) {
             distance.setText("Please select a destination");
-        }
-        else {
+        } else {
             distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m");
         }
 
