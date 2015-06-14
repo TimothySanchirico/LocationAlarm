@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements
     private Button setDest;
     boolean firstLocationUpdate = true;
     GoogleMap myMap;
+    private final int SETTINGS_RESULT = 25;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +144,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+            if(item.getItemId() == R.id.action_settings) {
+                Intent i = new Intent(getApplicationContext(), UserSettings.class);
+                startActivityForResult(i, SETTINGS_RESULT);
+            }
         return super.onOptionsItemSelected(item);
     }
 
