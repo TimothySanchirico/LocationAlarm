@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Distance Threshold">
+        <EditTextPreference
+            android:defaultValue="1000"
+            android:inputType="number"
+            android:title="Set Distance Threshold"
+            android:key= "distancePreference" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
