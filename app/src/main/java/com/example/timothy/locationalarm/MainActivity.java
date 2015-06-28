@@ -122,8 +122,7 @@ public class MainActivity extends AppCompatActivity implements
                 if(view.getId() == R.id.submitAdd) {
                     if(addr.getText() != null) {
                         getLocationFromAddress(addr.getText().toString());
-                        Log.i("LATLNG LAT:", Double.toString(mDestination.getLatitude()));
-                        Log.i("LATLNG LNG:", Double.toString(mDestination.getLongitude()));
+
 
                     }
                 }
@@ -174,6 +173,9 @@ public class MainActivity extends AppCompatActivity implements
         mDestination = new Location("");
         mDestination.setLatitude(latLng.latitude);
         mDestination.setLongitude(latLng.longitude);
+        myMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("Destination"));
     }
 
     public void getLocationFromAddress(String strAddress) {
@@ -191,9 +193,8 @@ public class MainActivity extends AppCompatActivity implements
             location.getLatitude();
             location.getLongitude();
 
-           mDestination = new Location("");
-            mDestination.setLongitude(location.getLongitude());
-            mDestination.setLatitude(location.getLatitude());
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+           setUpDestination(latLng);
 
 
         }
