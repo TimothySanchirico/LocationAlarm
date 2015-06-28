@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 
@@ -40,10 +43,23 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -57,9 +73,12 @@ public class MainActivity extends AppCompatActivity implements
 
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
+    Button submitAdr;
+    EditText addr;
     Location mCurrentLocation;
     String mLastUpdateTime;
     Location mDestination;
+    Double latitude, longitude;
     int thresholdDistance;
     TextView distance;
     boolean alarmRan = false;
@@ -95,6 +114,22 @@ public class MainActivity extends AppCompatActivity implements
         thresholdDistance = 1000; //in meters
 
         distance = (TextView) findViewById(R.id.mapText);
+        addr = (EditText) findViewById(R.id.address);
+        submitAdr = (Button) findViewById(R.id.submitAdd);
+        submitAdr.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view.getId() == R.id.submitAdd) {
+                    if(addr.getText() != null) {
+                        getLocationFromAddress(addr.getText().toString());
+                        Log.i("LATLNG LAT:", Double.toString(mDestination.getLatitude()));
+                        Log.i("LATLNG LNG:", Double.toString(mDestination.getLongitude()));
+
+                    }
+                }
+            }
+        });
+
 
 
     }
@@ -119,9 +154,7 @@ public class MainActivity extends AppCompatActivity implements
                         .setMessage("Set this location as destination?")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                mDestination = new Location("");
-                                mDestination.setLatitude(latLng.latitude);
-                                mDestination.setLongitude(latLng.longitude);
+                                setUpDestination(latLng);
 
 
                             }
@@ -135,6 +168,39 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
         myMap = map;
+    }
+
+    public void setUpDestination(LatLng latLng){
+        mDestination = new Location("");
+        mDestination.setLatitude(latLng.latitude);
+        mDestination.setLongitude(latLng.longitude);
+    }
+
+    public void getLocationFromAddress(String strAddress) {
+
+        Geocoder coder = new Geocoder(this);
+        List<Address> address;
+       mDestination = null;
+
+        try {
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+               return;
+            }
+            Address location = address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+
+           mDestination = new Location("");
+            mDestination.setLongitude(location.getLongitude());
+            mDestination.setLatitude(location.getLatitude());
+
+
+        }
+        catch (IOException ex){
+            Log.i("IO ERR", "in strng to ltlng");
+        }
+
     }
 
     @Override
@@ -315,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mDestination == null) {
             distance.setText("Please select a destination");
         } else {
-            distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m");
+            distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m from destination");
         }
 
     }

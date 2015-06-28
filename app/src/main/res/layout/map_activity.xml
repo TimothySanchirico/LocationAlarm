@@ -10,6 +10,15 @@
     android:text="Please select a destination"
     android:gravity="center"
     />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint ="enter the address"
+        android:id="@+id/address"/>
+    <Button android:id="@+id/submitAdd"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Set Destination" />
 
 <fragment
     android:name="com.google.android.gms.maps.MapFragment"
