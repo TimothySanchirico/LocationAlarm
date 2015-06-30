@@ -5,10 +5,12 @@ import android.app.Activity;
 import android.app.AlarmManager;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,6 +18,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -43,14 +46,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -59,13 +54,12 @@ import java.text.DateFormat;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements
-        com.google.android.gms.location.LocationListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
+        OnMapReadyCallback, CallbackInterface {
 
     private static final String TAG = "MainActivity"; // Tag for Logs
     private static long INTERVAL = 5000; // Longest time in between updates (5 seconds)
@@ -87,6 +81,29 @@ public class MainActivity extends AppCompatActivity implements
     GoogleMap myMap;
     private final int SETTINGS_RESULT = 25;
     SharedPreferences sharedPrefs;
+    BackgroundService service;
+    private boolean bound = false;
+    HashMap<String, JSONObject> jsonObjects = new HashMap<String, JSONObject>();
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service1) {
+            Log.i(TAG, "service connected ..........");
+            // cast the IBinder and get MyService instance
+            BackgroundService.LocalBinder binder = (BackgroundService.LocalBinder) service1;
+            service = binder.getService();
+            bound = true;
+            service.setCallBackInterface(MainActivity.this); // register
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            bound = false;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,16 +115,6 @@ public class MainActivity extends AppCompatActivity implements
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        checkGPSEnabled();
-        if (!isGooglePlayServicesAvailable()) {
-            finish();
-        }
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        createLocationRequest();
 
         mDestination = null;
 
@@ -230,102 +237,34 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(INTERVAL);
-        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
 
     @Override
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
 
+        Intent intent = new Intent(this, BackgroundService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        Log.i(TAG, "onStart() executed.........");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
-    }
-
-    private boolean isGooglePlayServicesAvailable() {
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (ConnectionResult.SUCCESS == status) {
-            return true;
-        } else {
-            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
-            return false;
-        }
     }
 
 
-    @Override
-    public void onConnected(Bundle bundle) {
 
-        startLocationUpdates();
-    }
 
-    protected void startLocationUpdates() {
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG, "Connection failed: " + connectionResult.toString());
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if (firstLocationUpdate) {
-            LatLng cameraHere = new LatLng(location.getLatitude(), location.getLongitude());
-            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraHere, 13));
-            firstLocationUpdate = false;
-        }
-        mCurrentLocation = location;
-        String lat = String.valueOf(mCurrentLocation.getLatitude());
-        String lng = String.valueOf(mCurrentLocation.getLongitude());
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-
-        if (checkDistance() && !alarmRan) {
-            alarmRan = true;
-            runAlarm();
-
-        }
-
-        setDistanceText();
-
-    }
 
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mGoogleApiClient.isConnected()) {
-            stopLocationUpdates();
-        }
+
     }
 
-    protected void stopLocationUpdates() {
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(
-                    mGoogleApiClient, this);
-        }
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
-    }
+
 
 
     public void checkGPSEnabled() {
@@ -384,6 +323,27 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m from destination");
         }
+
+    }
+
+    public void setCenter(LatLng latLng){
+        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+    }
+
+    public void passLocation(Location location){
+        Log.i("MAIN ACT: ","new location received");
+        mCurrentLocation = location;
+        String lat = String.valueOf(mCurrentLocation.getLatitude());
+        String lng = String.valueOf(mCurrentLocation.getLongitude());
+        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+
+        if (checkDistance() && !alarmRan) {
+            alarmRan = true;
+            runAlarm();
+
+        }
+
+        setDistanceText();
 
     }
 }

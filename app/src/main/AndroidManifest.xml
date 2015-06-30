@@ -32,8 +32,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".AlarmReciever" />
-        <activity android:name=".MapActivity" />
+
         <activity android:name=".UserSettings" />
+        <service android:name=".BackgroundService" />
     </application>
 
 </manifest>
