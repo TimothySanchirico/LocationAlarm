@@ -7,18 +7,21 @@
     android:id = "@+id/mapText"
     android:layout_height="wrap_content"
     android:layout_width="wrap_content"
-    android:text="Please select a destination"
+    android:text="0m from destination"
     android:gravity="center"
     />
-    <EditText
+
+    <AutoCompleteTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint ="enter the address"
-        android:id="@+id/address"/>
+        android:id="@+id/autocomplete"
+        android:hint="Type in your Location OR Tap on Screen" />
+
     <Button android:id="@+id/submitAdd"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:text="Set Destination" />
+        android:text="Set Destination"
+        android:layout_gravity="center_horizontal" />
 
 <fragment
     android:name="com.google.android.gms.maps.MapFragment"

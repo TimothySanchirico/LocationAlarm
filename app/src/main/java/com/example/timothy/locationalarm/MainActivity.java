@@ -4,11 +4,23 @@ package com.example.timothy.locationalarm;
 import android.app.Activity;
 import android.app.AlarmManager;
 
+import com.example.timothy.locationalarm.R;
+
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+
+import android.os.HandlerThread;
+import android.os.Message;
+import android.view.View;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.Toast;
 
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -26,6 +38,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -46,20 +60,29 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Handler;
 
 
 public class MainActivity extends AppCompatActivity implements
-        OnMapReadyCallback, CallbackInterface {
+        OnMapReadyCallback, CallbackInterface, OnItemClickListener {
 
     private static final String TAG = "MainActivity"; // Tag for Logs
     private static long INTERVAL = 5000; // Longest time in between updates (5 seconds)
@@ -121,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements
         thresholdDistance = 1000; //in meters
 
         distance = (TextView) findViewById(R.id.mapText);
-        addr = (EditText) findViewById(R.id.address);
+        addr = (EditText) findViewById(R.id.autocomplete);
         submitAdr = (Button) findViewById(R.id.submitAdd);
         submitAdr.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,10 +158,127 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
+        //ADDED BELOW
+        AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
 
-
-
+        autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
+        autoCompView.setOnItemClickListener(this);
+        //ADDED ABOVE
     }
+
+    //ADDED BELOW
+    public void onItemClick(AdapterView adapterView, View view, int position, long id) {
+        String str = (String) adapterView.getItemAtPosition(position);
+        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
+    private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
+    private static final String OUT_JSON = "/json";
+
+    private static final String API_KEY = "AIzaSyAM3C8M_wVb4aFodWZP2_SA_ljB0W1bFw8";
+
+    public ArrayList<String> autocomplete (String input) {
+        ArrayList<String> resultList = null;
+
+        HttpURLConnection conn = null;
+        StringBuilder jsonResults = new StringBuilder();
+
+        try {
+            StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
+            sb.append("?key=" + API_KEY);
+            sb.append("&types=(cities)");
+            sb.append("&input=" + URLEncoder.encode(input, "utf8"));
+            sb.append("&radius=650000");
+
+            URL url = new URL(sb.toString());
+            conn = (HttpURLConnection) url.openConnection();
+            InputStreamReader in = new InputStreamReader(conn.getInputStream());
+
+            // Load the results into a StringBuilder
+            int read;
+            char[] buff = new char[1024];
+            while ((read = in.read(buff)) != -1) {
+                jsonResults.append(buff, 0, read);
+            }
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "Error processing Places API URL", e);
+            return resultList;
+        } catch (IOException e) {
+            Log.e(TAG, "Error connecting to Places API", e);
+            return resultList;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+
+        try {
+            // Log.d(TAG, jsonResults.toString());
+
+            // Create a JSON object hierarchy from the results
+            JSONObject jsonObj = new JSONObject(jsonResults.toString());
+            JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
+
+            // Extract the Place descriptions from the results
+            resultList = new ArrayList<String>(predsJsonArray.length());
+            for (int i = 0; i < predsJsonArray.length(); i++) {
+                resultList.add(predsJsonArray.getJSONObject(i).getString("description"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Cannot process JSON results", e);
+        }
+
+        return resultList;
+    }
+
+    class GooglePlacesAutocompleteAdapter extends ArrayAdapter<String> implements Filterable {
+        private ArrayList<String> resultList;
+
+        public GooglePlacesAutocompleteAdapter(Context context, int textViewResourceId) {
+            super(context, textViewResourceId);
+        }
+
+        @Override
+        public int getCount() {
+            return resultList.size();
+        }
+
+        @Override
+        public String getItem(int index) {
+            return resultList.get(index);
+        }
+
+        @Override
+        public Filter getFilter() {
+            Filter filter = new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    FilterResults filterResults = new FilterResults();
+                    if (constraint != null) {
+                        // Retrieve the autocomplete results.
+                        resultList = autocomplete(constraint.toString());
+
+                        // Assign the data to the FilterResults
+                        filterResults.values = resultList;
+                        filterResults.count = resultList.size();
+                    }
+                    return filterResults;
+                }
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    if (results != null && results.count > 0) {
+                        notifyDataSetChanged();
+                    } else {
+                        notifyDataSetInvalidated();
+                    }
+                }
+            };
+            return filter;
+        }
+    }
+    //ADDED ABOVE
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -319,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void setDistanceText() {
         if (mDestination == null) {
-            distance.setText("Please select a destination");
+            distance.setText("0m from destination");
         } else {
             distance.setText(Float.toString(mCurrentLocation.distanceTo(mDestination)) + "m from destination");
         }
