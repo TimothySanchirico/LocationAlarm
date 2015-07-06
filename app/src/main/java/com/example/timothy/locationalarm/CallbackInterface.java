@@ -10,4 +10,5 @@ import com.google.android.gms.maps.model.LatLng;
 public interface CallbackInterface {
     void setCenter(LatLng latLng);
     void passLocation(Location location);
+    void checkGPSEnabled();
 }
