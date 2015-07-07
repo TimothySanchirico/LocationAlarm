@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-
+            //this comment is meaningless
 
         checkGPSEnabled();
         MapFragment mapFragment = (MapFragment) getFragmentManager()
