@@ -14,6 +14,7 @@ import android.content.Intent;
 
 import android.os.HandlerThread;
 import android.os.Message;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -82,7 +83,8 @@ import java.util.logging.Handler;
 
 
 public class MainActivity extends AppCompatActivity implements
-        OnMapReadyCallback, CallbackInterface, OnItemClickListener {
+        OnMapReadyCallback, CallbackInterface, OnItemClickListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity"; // Tag for Logs
     private static long INTERVAL = 5000; // Longest time in between updates (5 seconds)
@@ -134,6 +136,14 @@ public class MainActivity extends AppCompatActivity implements
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.map_activity);
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+
+        checkGPSEnabled();
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -164,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements
         autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
         autoCompView.setOnItemClickListener(this);
         //ADDED ABOVE
+
     }
 
     //ADDED BELOW
@@ -281,16 +292,29 @@ public class MainActivity extends AppCompatActivity implements
     //ADDED ABOVE
 
     @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG, "Connection failed: " + connectionResult.toString());
+    }
+
+    @Override
     public void onMapReady(GoogleMap map) {
-        LatLng sydney = new LatLng(-33.867, 151.206);
 
+        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        LatLng startCenter;
+        if(lastLocation == null){
+            startCenter = new LatLng(0,0);
+        }
+        else {
+            startCenter = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+        }
         map.setMyLocationEnabled(true);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(startCenter, 13));
 
-        map.addMarker(new MarkerOptions()
-                .title("Sydney")
-                .snippet("The most populous city in Australia.")
-                .position(sydney));
+
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(final LatLng latLng) {
@@ -484,6 +508,11 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         setDistanceText();
+
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
 
     }
 }

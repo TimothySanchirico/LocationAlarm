@@ -77,7 +77,6 @@ public class BackgroundService extends Service implements
     @Override
     public void onCreate() {
         Log.i(TAG, "onCreate() called.............");
-        checkGPSEnabled();
         if (!isGooglePlayServicesAvailable()) {
             stopSelf();
         }
@@ -184,7 +183,7 @@ public class BackgroundService extends Service implements
     public void checkGPSEnabled() {
         callbackInterface.checkGPSEnabled();
     }
-    
+
 
     public class LocalBinder extends Binder {
         BackgroundService getService() {
