@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-            //this comment is meaningless
 
         checkGPSEnabled();
         MapFragment mapFragment = (MapFragment) getFragmentManager()
@@ -168,16 +167,16 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
-        //ADDED BELOW
+        //Some AutoComplete Text View Setup
         AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
 
         autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
         autoCompView.setOnItemClickListener(this);
-        //ADDED ABOVE
+
 
     }
 
-    //ADDED BELOW
+    //AutoComplete BELOW
     public void onItemClick(AdapterView adapterView, View view, int position, long id) {
         String str = (String) adapterView.getItemAtPosition(position);
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
@@ -187,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
 
-    private static final String API_KEY = "AIzaSyAM3C8M_wVb4aFodWZP2_SA_ljB0W1bFw8";
+    private static final String API_KEY = "AIzaSyCX6qvOP8CkQl1eUE7wkEmegaS-noXd0vw";
 
     public ArrayList<String> autocomplete (String input) {
         ArrayList<String> resultList = null;
@@ -198,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements
         try {
             StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
             sb.append("?key=" + API_KEY);
-            sb.append("&types=(cities)");
+            sb.append("&types=address");
             sb.append("&input=" + URLEncoder.encode(input, "utf8"));
             sb.append("&radius=650000");
 
@@ -289,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements
             return filter;
         }
     }
-    //ADDED ABOVE
+    //AutoComplete ABOVE
 
     @Override
     public void onConnectionSuspended(int i) {

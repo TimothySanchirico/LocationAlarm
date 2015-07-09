@@ -1,19 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:gravity="center" >
-    <TextView
-        android:id="@+id/alarmText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="You are near your destination"/>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff88faff">
+
     <Button
-        android:id="@+id/stopAlarm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stop Alarm"
-        android:layout_below="@id/alarmText"/>
+        android:id="@+id/stopAlarm"
+        android:padding="100dp"
+        android:visibility="visible"
+        android:clickable="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="85dp"
+        android:alpha="0" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/clock"
+        android:src="@mipmap/alarm_clock"
+        android:background="#ff88faff"
+        android:layout_above="@+id/textView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:paddingLeft="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="You Are Near Your Destination!"
+        android:id="@+id/textView"
+        android:elegantTextHeight="false"
+        android:textColor="#ff000000"
+        android:layout_above="@+id/textView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="31dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Tap the Clock to Stop the Alarm"
+        android:id="@+id/textView2"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="28dp" />
 
 </RelativeLayout>
