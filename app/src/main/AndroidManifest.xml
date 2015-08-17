@@ -25,15 +25,12 @@
             android:name=".MainActivity"
             android:label="@string/app_name" >
         </activity>
+
         <activity android:name=".AlarmReciever" />
         <activity android:name=".UserSettings" />
 
         <service android:name=".BackgroundService" />
 
-        <activity
-            android:name=".FrontPageActivity"
-            android:label="@string/app_name" >
-        </activity>
         <activity
             android:name=".SplashActivity"
             android:label="@string/app_name" >
