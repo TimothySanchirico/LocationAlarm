@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements
                 if(view.getId() == R.id.submitAdd) {
                     if(addr.getText() != null) {
                         if (TextUtils.isEmpty(addr.getText().toString())){
+                            //Check if entry is blank
                             return;
                         }
                         else{
@@ -505,13 +506,18 @@ public class MainActivity extends AppCompatActivity implements
         String lng = String.valueOf(mCurrentLocation.getLongitude());
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
 
+        setDistanceText();
+
         if (checkDistance() && !alarmRan) {
             alarmRan = true;
             runAlarm();
 
+            //Reset Destination
+            mDestination = null;
+            alarmRan = false;
         }
 
-        setDistanceText();
+
 
     }
 
