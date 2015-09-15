@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -160,8 +161,12 @@ public class MainActivity extends AppCompatActivity implements
             public void onClick(View view) {
                 if(view.getId() == R.id.submitAdd) {
                     if(addr.getText() != null) {
-                        getLocationFromAddress(addr.getText().toString());
-
+                        if (TextUtils.isEmpty(addr.getText().toString())){
+                            return;
+                        }
+                        else{
+                            getLocationFromAddress(addr.getText().toString());
+                        }
 
                     }
                 }
