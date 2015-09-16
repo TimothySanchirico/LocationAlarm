@@ -1,4 +1,4 @@
-package com.example.timothy.locationalarm;
+package com.timothy.greg.locationalarm;
 
 import android.location.Location;
 

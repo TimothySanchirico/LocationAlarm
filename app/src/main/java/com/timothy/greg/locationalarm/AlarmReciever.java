@@ -1,4 +1,4 @@
-package com.example.timothy.locationalarm;
+package com.timothy.greg.locationalarm;
 
 /**
  * Created by timothy on 6/7/15.
@@ -29,9 +29,9 @@ public class AlarmReciever extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.alarm);
+        setContentView(com.timothy.greg.locationalarm.R.layout.alarm);
 
-        Button stopAlarm = (Button) findViewById(R.id.stopAlarm);
+        Button stopAlarm = (Button) findViewById(com.timothy.greg.locationalarm.R.id.stopAlarm);
         stopAlarm.setOnTouchListener(new OnTouchListener() {
             public boolean onTouch(View arg0, MotionEvent arg1) {
                 mMediaPlayer.stop();

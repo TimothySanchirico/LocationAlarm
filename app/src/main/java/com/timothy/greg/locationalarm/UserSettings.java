@@ -1,4 +1,4 @@
-package com.example.timothy.locationalarm;
+package com.timothy.greg.locationalarm;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -18,7 +18,7 @@ public class UserSettings extends AppCompatActivity {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.user_settings);
+            addPreferencesFromResource(com.timothy.greg.locationalarm.R.xml.user_settings);
         }
     }
 }

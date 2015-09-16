@@ -1,10 +1,8 @@
-package com.example.timothy.locationalarm;
+package com.timothy.greg.locationalarm;
 
 
 import android.app.Activity;
 import android.app.AlarmManager;
-
-import com.example.timothy.locationalarm.R;
 
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -12,9 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
-import android.os.HandlerThread;
-import android.os.Message;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView.OnItemClickListener;
@@ -39,19 +34,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -67,7 +57,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -80,7 +69,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Handler;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -135,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        setContentView(R.layout.map_activity);
+        setContentView(com.timothy.greg.locationalarm.R.layout.map_activity);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -145,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements
 
         checkGPSEnabled();
         MapFragment mapFragment = (MapFragment) getFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(com.timothy.greg.locationalarm.R.id.map);
         mapFragment.getMapAsync(this);
 
 
@@ -153,13 +141,13 @@ public class MainActivity extends AppCompatActivity implements
 
         thresholdDistance = 1000; //in meters
 
-        distance = (TextView) findViewById(R.id.mapText);
-        addr = (EditText) findViewById(R.id.autocomplete);
-        submitAdr = (Button) findViewById(R.id.submitAdd);
+        distance = (TextView) findViewById(com.timothy.greg.locationalarm.R.id.mapText);
+        addr = (EditText) findViewById(com.timothy.greg.locationalarm.R.id.autocomplete);
+        submitAdr = (Button) findViewById(com.timothy.greg.locationalarm.R.id.submitAdd);
         submitAdr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(view.getId() == R.id.submitAdd) {
+                if(view.getId() == com.timothy.greg.locationalarm.R.id.submitAdd) {
                     if(addr.getText() != null) {
                         if (TextUtils.isEmpty(addr.getText().toString())){
                             //Check if entry is blank
@@ -174,9 +162,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
         //Some AutoComplete Text View Setup
-        AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
+        AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(com.timothy.greg.locationalarm.R.id.autocomplete);
 
-        autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
+        autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, com.timothy.greg.locationalarm.R.layout.list_item));
         autoCompView.setOnItemClickListener(this);
 
 
@@ -392,13 +380,13 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(com.timothy.greg.locationalarm.R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_settings) {
+        if (item.getItemId() == com.timothy.greg.locationalarm.R.id.action_settings) {
             Intent i = new Intent(getApplicationContext(), UserSettings.class);
             startActivityForResult(i, SETTINGS_RESULT);
         }
