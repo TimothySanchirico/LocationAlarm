@@ -4,3 +4,11 @@ Never miss your stops again with Location Alarm!
 
 
 Created by Greg Wajda and Tim Sanchirico
+
+Features:
+
+-Feel like setting the alarm off when you get within 2 km? or what about 3 km? Customize your distance threshold in the settings
+
+-As soon as you arrive at your destination, immediately set a new one!
+
+-Don't remember the address? Try typing in a part of it with the auto-complete text bar.
