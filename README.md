@@ -10,5 +10,6 @@ Features:
 
 -Don't remember the address? Try typing in a part of it with the auto-complete text bar.
 
+Check it out on GooglePlay! https://play.google.com/store/apps/details?id=com.timothy.greg.locationalarm
 
 Created by Greg Wajda and Tim Sanchirico
